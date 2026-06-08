@@ -1,8 +1,8 @@
 # Agent Notebook
 
-Agent Notebook is a small Obsidian plugin for building notebook-scoped prompts for an opencode workflow, with DeepSeek as the primary model target.
+Agent Notebook is a small Obsidian plugin for building notebook-scoped prompts on top of an opencode workflow.
 
-It does not replace Obsidian, and it does not provide a full chat UI. Obsidian remains the place to read and organize notes; opencode remains the place to execute work. This plugin turns the current vault, notebook folder, active file, heading, selected text, task stage, scope, and edit policy into a precise prompt that can be pasted into opencode.
+It does not replace Obsidian, and it does not provide a full chat UI. Obsidian remains the place to read and organize notes; opencode remains the place to execute work. This plugin turns the current vault, notebook folder, active file, heading, selected text, task stage, scope, and edit policy into a precise prompt that can be pasted into your opencode session.
 
 ## Features
 

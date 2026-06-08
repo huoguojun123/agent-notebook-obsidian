@@ -87,7 +87,7 @@ export class TaskModal extends Modal {
 
     new Setting(contentEl)
       .setName("要求")
-      .setDesc("写清楚你希望 opencode / DeepSeek 对当前 notebook 做什么。");
+      .setDesc("写清楚你希望 opencode 对当前 notebook 做什么。");
     const textarea = contentEl.createEl("textarea", {
       attr: {
         placeholder: "例如：按零基础学习者视角优化当前章节结构，非当前文件只提建议。"

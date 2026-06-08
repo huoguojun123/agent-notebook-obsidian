@@ -23,7 +23,7 @@ export function buildNotebookTaskPrompt(input: NotebookTaskInput): BuiltPrompt {
   const runFileName = buildRunFileName(stage);
 
   const prompt = [
-    "你正在通过 opencode 处理一个 Obsidian notebook，当前主要模型是 DeepSeek。",
+    "你正在通过 opencode 工作流处理一个 Obsidian notebook。",
     "请按文件工作流执行，不要按普通聊天模式泛泛回答。",
     "",
     "工作范围：",
