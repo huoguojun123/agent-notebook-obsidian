@@ -83,7 +83,7 @@ export class AgentNotebookView extends ItemView {
     header.createEl("h2", { text: context?.notebook?.title || "未标记 Notebook" });
     header.createEl("p", {
       text: context
-        ? "把当前笔记上下文整理成可直接交给 CLI agent 的任务。"
+        ? "把当前笔记上下文整理成可直接交给 opencode / DeepSeek 的任务。"
         : "打开一个 Markdown 文件后开始。"
     });
 

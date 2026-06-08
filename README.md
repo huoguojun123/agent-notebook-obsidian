@@ -1,8 +1,8 @@
 # Agent Notebook
 
-Agent Notebook is a small Obsidian plugin for building notebook-scoped prompts for CLI agents such as opencode, Codex, or Claude Code.
+Agent Notebook is a small Obsidian plugin for building notebook-scoped prompts for an opencode workflow, with DeepSeek as the primary model target.
 
-It does not replace Obsidian, and it does not provide a full chat UI. Obsidian remains the place to read and organize notes; the CLI agent remains the place to execute work. This plugin turns the current vault, notebook folder, active file, heading, selected text, task stage, scope, and edit policy into a precise prompt that can be pasted into your preferred CLI agent.
+It does not replace Obsidian, and it does not provide a full chat UI. Obsidian remains the place to read and organize notes; opencode remains the place to execute work. This plugin turns the current vault, notebook folder, active file, heading, selected text, task stage, scope, and edit policy into a precise prompt that can be pasted into opencode.
 
 ## Features
 
@@ -12,7 +12,7 @@ It does not replace Obsidian, and it does not provide a full chat UI. Obsidian r
 - Choose a notebook lifecycle stage: ideate, outline, generate, study, optimize, supplement, or review.
 - Choose task scope: current selection, current heading, current file, or whole notebook.
 - Choose how non-focus content should be handled: suggest only, ask first, or allow linked edits.
-- Generate a structured CLI-agent prompt with scope and edit rules.
+- Generate a structured opencode prompt with scope and edit rules.
 - Copy the prompt to the clipboard.
 - Optionally create a `_agent-runs/` draft in the notebook folder.
 
@@ -23,7 +23,7 @@ It does not replace Obsidian, and it does not provide a full chat UI. Obsidian r
 3. Mark the current folder as a notebook if needed.
 4. Select the stage, scope, and non-focus policy.
 5. Write the task requirement.
-6. Copy the generated prompt, paste it into your CLI agent, and let Obsidian remain the reading surface.
+6. Copy the generated prompt, paste it into opencode, and let Obsidian remain the reading surface.
 
 ## Install With BRAT
 
@@ -62,4 +62,4 @@ The source lives in `src/`. The compiled plugin entry is `main.js`.
 
 ## Current Status
 
-This is an early MVP intended for personal workflow testing. It generates prompts and run drafts; it does not execute shell commands or call external agents directly.
+This is an early MVP intended for personal workflow testing. It generates prompts and run drafts; it does not execute shell commands or call opencode directly yet.

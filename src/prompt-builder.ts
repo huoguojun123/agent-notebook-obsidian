@@ -23,7 +23,8 @@ export function buildNotebookTaskPrompt(input: NotebookTaskInput): BuiltPrompt {
   const runFileName = buildRunFileName(stage);
 
   const prompt = [
-    "你正在作为 CLI agent 处理一个 Obsidian notebook。",
+    "你正在通过 opencode 处理一个 Obsidian notebook，当前主要模型是 DeepSeek。",
+    "请按文件工作流执行，不要按普通聊天模式泛泛回答。",
     "",
     "工作范围：",
     `- Vault: ${context.vaultName}`,
@@ -44,7 +45,7 @@ export function buildNotebookTaskPrompt(input: NotebookTaskInput): BuiltPrompt {
     instruction.trim(),
     "",
     "执行规则：",
-    "1. 先快速检查 notebook 结构和与焦点内容最相关的文件。",
+    "1. 先快速检查 notebook 结构和与焦点内容最相关的文件，再决定改动。",
     `2. 本次任务范围是“${scopeLabel}”；不要把工作扩展成无边界的全库整理。`,
     `3. 焦点内容可以按任务要求修改；非焦点内容按“${nonFocusPolicyLabel}”处理。`,
     "4. 可以在合适位置新建文件夹和 Markdown 文件，但需列出清单。",
