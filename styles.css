@@ -1,0 +1,8 @@
+.agent-notebook-modal textarea {
+  min-height: 140px;
+}
+
+.agent-notebook-muted {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
