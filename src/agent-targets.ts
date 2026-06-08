@@ -126,11 +126,7 @@ export async function listAgentTargets(app: App): Promise<AgentTarget[]> {
   const sessionTargets = sessions.map((session, index) => ({
     id: `session:${session.id}`,
     isActive: false,
-    label: `${index === 0 ? "最近 · " : ""}${session.title || "Untitled"} · ${formatSessionUpdated(
-      session.updated
-    )} · ${shortenPath(
-      session.directory
-    )}`
+    label: `${index === 0 ? "最近 · " : ""}${sessionName(session)}`
   }));
 
   return [...sessionTargets, ...openTargets];
@@ -309,6 +305,15 @@ function formatSessionUpdated(value: number): string {
   return `${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(
     date.getHours()
   )}:${pad(date.getMinutes())}`;
+}
+
+function sessionName(session: OpencodeSession): string {
+  const title = session.title.trim();
+  if (title) {
+    return title;
+  }
+  const date = formatSessionUpdated(session.updated);
+  return date === "时间未知" ? "未命名 session" : `未命名 session · ${date}`;
 }
 
 function execShell(command: string, cwd: string): Promise<string> {
