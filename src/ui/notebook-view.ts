@@ -93,14 +93,22 @@ export class AgentNotebookView extends ItemView {
     contentEl.addClass("agent-notebook-view");
 
     const header = contentEl.createDiv("agent-notebook-view__header");
+    const notebookRoot = context?.notebook?.rootPath || context?.activeFolderPath || "";
+    const notebookTitle = context
+      ? context.notebook?.title || nameFromPath(notebookRoot)
+      : "Agent Notebook";
     header.createDiv({
       cls: "agent-notebook-eyebrow",
-      text: "Agent Notebook"
+      text: `Agent Notebook · ${this.plugin.manifest.version}${
+        context && !context.notebook ? " · 未标记" : ""
+      }`
     });
-    header.createEl("h2", { text: context?.notebook?.title || "未标记 Notebook" });
+    header.createEl("h2", { text: notebookTitle });
     header.createEl("p", {
       text: context
-        ? "把当前笔记上下文整理成可直接交给 opencode 的任务。"
+        ? context.notebook
+          ? "把当前笔记上下文整理成可直接交给 opencode 的任务。"
+          : "当前按文件夹临时定位 Notebook；标记后会固定这个工作范围。"
         : "打开一个 Markdown 文件后开始。"
     });
 
@@ -135,9 +143,10 @@ export class AgentNotebookView extends ItemView {
     }
 
     const notebookRoot = context.notebook?.rootPath || context.activeFolderPath || ".";
+    const notebookTitle = context.notebook?.title || `${nameFromPath(notebookRoot)}（未标记）`;
     const rows = [
       ["Vault", context.vaultName],
-      ["Notebook", context.notebook?.title || nameFromPath(notebookRoot)],
+      ["Notebook", notebookTitle],
       ["Root", notebookRoot],
       ["File", context.activeFilePath],
       ["Heading", context.currentHeading || "未定位到标题"],
@@ -179,13 +188,13 @@ export class AgentNotebookView extends ItemView {
       });
     });
 
-    this.renderToggleControl(container, "Run", (toggle) => {
+    this.renderToggleControl(container, "Run 草稿", (toggle) => {
       toggle.setValue(this.createRunDraft).onChange((value) => {
         this.createRunDraft = value;
       });
     });
 
-    this.renderToggleControl(container, "Sidebar", (toggle) => {
+    this.renderToggleControl(container, "发送", (toggle) => {
       toggle.setValue(this.sendToSidebar).onChange((value) => {
         this.sendToSidebar = value;
       });
@@ -208,13 +217,12 @@ export class AgentNotebookView extends ItemView {
       "agent-notebook-control__field agent-notebook-control__field--session"
     );
     const dropdown = new DropdownComponent(field);
-    dropdown.addOption(
-      "",
-      this.isLoadingTargets ? "加载中" : targets.length ? "最近使用" : "无 session"
-    );
-
-    for (const target of targets) {
-      dropdown.addOption(target.id, target.label);
+    if (targets.length) {
+      for (const target of targets) {
+        dropdown.addOption(target.id, target.label);
+      }
+    } else {
+      dropdown.addOption("", this.isLoadingTargets ? "正在读取 session" : "无 session");
     }
 
     dropdown.setValue(this.selectedTargetId);
@@ -227,6 +235,7 @@ export class AgentNotebookView extends ItemView {
     new ButtonComponent(field)
       .setButtonText("刷新")
       .setTooltip("刷新 opencode sessions")
+      .setDisabled(this.isLoadingTargets)
       .onClick(() => {
         this.refreshAgentTargets();
       });
@@ -234,7 +243,7 @@ export class AgentNotebookView extends ItemView {
     if (!targets.length && !this.isLoadingTargets) {
       row.createDiv({
         cls: "agent-notebook-control__hint",
-        text: "未读到 opencode 历史 session"
+        text: "未读到 opencode 历史 session；确认 opencode CLI 可用后点刷新。"
       });
     }
   }

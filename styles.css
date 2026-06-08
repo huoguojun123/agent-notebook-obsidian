@@ -24,6 +24,7 @@
 
 .agent-notebook-view__header h2 {
   margin: 0;
+  color: var(--text-normal);
   font-size: 17px;
   font-weight: 650;
   letter-spacing: 0;
@@ -107,9 +108,20 @@
   min-width: 0;
 }
 
+.agent-notebook-control__field--session {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
+}
+
 .agent-notebook-control__field select {
   width: 100%;
   min-width: 0;
+}
+
+.agent-notebook-control__field--session button {
+  min-width: 52px;
+  padding-inline: 10px;
 }
 
 .agent-notebook-control__field .checkbox-container {
