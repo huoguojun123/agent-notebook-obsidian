@@ -12,9 +12,11 @@ It does not replace Obsidian, and it does not provide a full chat UI. Obsidian r
 - Choose a notebook lifecycle stage: ideate, outline, generate, study, optimize, supplement, or review.
 - Choose task scope: current selection, current heading, current file, or whole notebook.
 - Choose how non-focus content should be handled: suggest only, ask first, or allow linked edits.
-- Generate a structured opencode prompt with scope and edit rules.
+- Generate a stage-aware opencode prompt with scope and edit rules.
 - Copy the prompt to the clipboard.
 - Optionally create a `_agent-runs/` draft in the notebook folder.
+
+The current generator is deterministic by design: it uses a stable task-card template instead of calling another model to rewrite the prompt. A separate AI prompt refinement layer may be added later as an optional step.
 
 ## Workflow
 
