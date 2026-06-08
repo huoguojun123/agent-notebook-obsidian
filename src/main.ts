@@ -8,6 +8,7 @@ import {
   WorkspaceLeaf,
   normalizePath
 } from "obsidian";
+import { sendToClaudeSidebar } from "./agent-targets";
 import { collectNotebookContext } from "./context";
 import { nameFromPath, upsertNotebook } from "./notebooks";
 import { buildNotebookTaskPrompt } from "./prompt-builder";
@@ -186,14 +187,27 @@ export default class AgentNotebookPlugin extends Plugin {
           stage
         });
 
-        await navigator.clipboard.writeText(built.prompt);
+        let runPath = "";
 
         if (createDraft) {
-          const runPath = await createRunDraft(this.app.vault, context, built);
-          new Notice(`Prompt 已复制，run 草稿已创建：${runPath}`);
-        } else {
-          new Notice("Prompt 已复制。");
+          runPath = await createRunDraft(this.app.vault, context, built);
         }
+
+        const sent = this.settings.sendToClaudeSidebarByDefault
+          ? await sendToClaudeSidebar(this.app, built.prompt)
+          : false;
+
+        if (sent) {
+          new Notice(runPath ? `任务已发送，run 草稿已创建：${runPath}` : "任务已发送。");
+          return;
+        }
+
+        await navigator.clipboard.writeText(built.prompt);
+        new Notice(
+          runPath
+            ? `未能发送到 Sidebar；Prompt 已复制，run 草稿已创建：${runPath}`
+            : "Prompt 已复制。"
+        );
       }
     }).open();
   }

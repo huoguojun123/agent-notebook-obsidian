@@ -22,6 +22,7 @@ import {
   SCOPE_LABELS,
   STAGE_LABELS
 } from "../types";
+import { sendToClaudeSidebar } from "../agent-targets";
 
 export const AGENT_NOTEBOOK_VIEW_TYPE = "agent-notebook-view";
 
@@ -36,6 +37,7 @@ export class AgentNotebookView extends ItemView {
   private instruction = "";
   private nonFocusPolicy: NonFocusPolicy = "suggest";
   private readonly plugin: AgentNotebookPlugin;
+  private sendToSidebar = true;
   private stage: NotebookStage = "optimize";
   private taskScope: NotebookTaskScope = "selection";
 
@@ -45,6 +47,7 @@ export class AgentNotebookView extends ItemView {
     this.icon = "sparkles";
     this.navigation = false;
     this.createRunDraft = plugin.settings.createRunDraftByDefault;
+    this.sendToSidebar = plugin.settings.sendToClaudeSidebarByDefault;
   }
 
   getViewType(): string {
@@ -167,6 +170,12 @@ export class AgentNotebookView extends ItemView {
         this.createRunDraft = value;
       });
     });
+
+    new Setting(container).setName("发送到 Sidebar").addToggle((toggle) => {
+      toggle.setValue(this.sendToSidebar).onChange((value) => {
+        this.sendToSidebar = value;
+      });
+    });
   }
 
   private renderInstruction(container: HTMLElement): void {
@@ -202,22 +211,27 @@ export class AgentNotebookView extends ItemView {
       });
 
     new ButtonComponent(actions)
-      .setButtonText("复制 Prompt")
+      .setButtonText("发送任务")
       .setCta()
       .onClick(async () => {
-        await this.buildAndCopy(context, false);
+        await this.buildAndDispatch(
+          context,
+          this.createRunDraft,
+          this.sendToSidebar
+        );
       });
 
     new ButtonComponent(actions)
-      .setButtonText("复制并记录")
+      .setButtonText("只复制")
       .onClick(async () => {
-        await this.buildAndCopy(context, this.createRunDraft);
+        await this.buildAndDispatch(context, false, false);
       });
   }
 
-  private async buildAndCopy(
+  private async buildAndDispatch(
     context: NotebookContext,
-    shouldCreateDraft: boolean
+    shouldCreateDraft: boolean,
+    shouldSendToSidebar: boolean
   ): Promise<void> {
     if (!this.instruction.trim()) {
       new Notice("请先填写任务要求。");
@@ -233,15 +247,25 @@ export class AgentNotebookView extends ItemView {
       stage: this.stage
     });
 
-    await navigator.clipboard.writeText(built.prompt);
-
+    let runPath = "";
     if (shouldCreateDraft) {
-      const path = await writeRunDraft(this.app.vault, context, built);
-      new Notice(`Prompt 已复制，run 草稿已创建：${path}`);
-      return;
+      runPath = await writeRunDraft(this.app.vault, context, built);
     }
 
-    new Notice("Prompt 已复制。");
+    if (shouldSendToSidebar) {
+      const sent = await sendToClaudeSidebar(this.app, built.prompt);
+      if (sent) {
+        new Notice(runPath ? `任务已发送，run 草稿已创建：${runPath}` : "任务已发送。");
+        return;
+      }
+    }
+
+    await navigator.clipboard.writeText(built.prompt);
+    new Notice(
+      runPath
+        ? `未能发送到 Sidebar；Prompt 已复制，run 草稿已创建：${runPath}`
+        : "Prompt 已复制。"
+    );
   }
 
   private collectContext(): NotebookContext | null {

@@ -1,7 +1,7 @@
 {
   "id": "agent-notebook",
   "name": "Agent Notebook",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "minAppVersion": "1.5.0",
   "description": "Build notebook-scoped opencode prompts from Obsidian context.",
   "author": "Guojun",

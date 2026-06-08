@@ -24,6 +24,7 @@ export interface NotebookConfig {
 export interface AgentNotebookSettings {
   notebooks: NotebookConfig[];
   createRunDraftByDefault: boolean;
+  sendToClaudeSidebarByDefault: boolean;
 }
 
 export interface NotebookContext {
@@ -53,7 +54,8 @@ export interface BuiltPrompt {
 
 export const DEFAULT_SETTINGS: AgentNotebookSettings = {
   notebooks: [],
-  createRunDraftByDefault: true
+  createRunDraftByDefault: true,
+  sendToClaudeSidebarByDefault: true
 };
 
 export const STAGE_LABELS: Record<NotebookStage, string> = {
