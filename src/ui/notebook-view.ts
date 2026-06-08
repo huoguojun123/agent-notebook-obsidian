@@ -22,7 +22,11 @@ import {
   SCOPE_LABELS,
   STAGE_LABELS
 } from "../types";
-import { sendToClaudeSidebar } from "../agent-targets";
+import {
+  listClaudeSidebarTargets,
+  resolveDefaultClaudeSidebarTargetId,
+  sendToClaudeSidebar
+} from "../agent-targets";
 
 export const AGENT_NOTEBOOK_VIEW_TYPE = "agent-notebook-view";
 
@@ -37,6 +41,7 @@ export class AgentNotebookView extends ItemView {
   private instruction = "";
   private nonFocusPolicy: NonFocusPolicy = "suggest";
   private readonly plugin: AgentNotebookPlugin;
+  private selectedTargetId = "";
   private sendToSidebar = true;
   private stage: NotebookStage = "optimize";
   private taskScope: NotebookTaskScope = "selection";
@@ -47,6 +52,7 @@ export class AgentNotebookView extends ItemView {
     this.icon = "sparkles";
     this.navigation = false;
     this.createRunDraft = plugin.settings.createRunDraftByDefault;
+    this.selectedTargetId = plugin.settings.lastClaudeSidebarTargetId;
     this.sendToSidebar = plugin.settings.sendToClaudeSidebarByDefault;
   }
 
@@ -176,6 +182,38 @@ export class AgentNotebookView extends ItemView {
         this.sendToSidebar = value;
       });
     });
+
+    this.renderTargetControl(container);
+  }
+
+  private renderTargetControl(container: HTMLElement): void {
+    const targets = listClaudeSidebarTargets(this.app);
+    this.selectedTargetId = resolveDefaultClaudeSidebarTargetId(
+      this.app,
+      this.selectedTargetId || this.plugin.settings.lastClaudeSidebarTargetId
+    );
+
+    new Setting(container)
+      .setName("目标 session")
+      .setDesc(
+        targets.length ? "" : "没有打开的 Claude Sidebar tab；发送时会尝试打开。"
+      )
+      .addDropdown((dropdown) => {
+        if (!targets.length) {
+          dropdown.addOption("", "自动");
+        }
+
+        for (const target of targets) {
+          dropdown.addOption(target.id, target.label);
+        }
+
+        dropdown.setValue(this.selectedTargetId);
+        dropdown.onChange(async (value) => {
+          this.selectedTargetId = value;
+          this.plugin.settings.lastClaudeSidebarTargetId = value;
+          await this.plugin.saveSettings();
+        });
+      });
   }
 
   private renderInstruction(container: HTMLElement): void {
@@ -253,8 +291,15 @@ export class AgentNotebookView extends ItemView {
     }
 
     if (shouldSendToSidebar) {
-      const sent = await sendToClaudeSidebar(this.app, built.prompt);
+      const targetId = resolveDefaultClaudeSidebarTargetId(
+        this.app,
+        this.selectedTargetId || this.plugin.settings.lastClaudeSidebarTargetId
+      );
+      const sent = await sendToClaudeSidebar(this.app, built.prompt, targetId);
       if (sent) {
+        this.selectedTargetId = targetId;
+        this.plugin.settings.lastClaudeSidebarTargetId = targetId;
+        await this.plugin.saveSettings();
         new Notice(runPath ? `任务已发送，run 草稿已创建：${runPath}` : "任务已发送。");
         return;
       }

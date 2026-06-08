@@ -8,7 +8,10 @@ import {
   WorkspaceLeaf,
   normalizePath
 } from "obsidian";
-import { sendToClaudeSidebar } from "./agent-targets";
+import {
+  resolveDefaultClaudeSidebarTargetId,
+  sendToClaudeSidebar
+} from "./agent-targets";
 import { collectNotebookContext } from "./context";
 import { nameFromPath, upsertNotebook } from "./notebooks";
 import { buildNotebookTaskPrompt } from "./prompt-builder";
@@ -193,11 +196,17 @@ export default class AgentNotebookPlugin extends Plugin {
           runPath = await createRunDraft(this.app.vault, context, built);
         }
 
+        const targetId = resolveDefaultClaudeSidebarTargetId(
+          this.app,
+          this.settings.lastClaudeSidebarTargetId
+        );
         const sent = this.settings.sendToClaudeSidebarByDefault
-          ? await sendToClaudeSidebar(this.app, built.prompt)
+          ? await sendToClaudeSidebar(this.app, built.prompt, targetId)
           : false;
 
         if (sent) {
+          this.settings.lastClaudeSidebarTargetId = targetId;
+          await this.saveSettings();
           new Notice(runPath ? `任务已发送，run 草稿已创建：${runPath}` : "任务已发送。");
           return;
         }

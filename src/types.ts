@@ -24,6 +24,7 @@ export interface NotebookConfig {
 export interface AgentNotebookSettings {
   notebooks: NotebookConfig[];
   createRunDraftByDefault: boolean;
+  lastClaudeSidebarTargetId: string;
   sendToClaudeSidebarByDefault: boolean;
 }
 
@@ -55,6 +56,7 @@ export interface BuiltPrompt {
 export const DEFAULT_SETTINGS: AgentNotebookSettings = {
   notebooks: [],
   createRunDraftByDefault: true,
+  lastClaudeSidebarTargetId: "",
   sendToClaudeSidebarByDefault: true
 };
 
