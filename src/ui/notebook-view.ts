@@ -18,13 +18,14 @@ import type {
   NotebookStage,
   NotebookTaskScope
 } from "../types";
+import type { AgentTarget } from "../agent-targets";
 import {
   NON_FOCUS_POLICY_LABELS,
   SCOPE_LABELS,
   STAGE_LABELS
 } from "../types";
 import {
-  listClaudeSidebarTargets,
+  listAgentTargets,
   resolveDefaultClaudeSidebarTargetId,
   sendToClaudeSidebar
 } from "../agent-targets";
@@ -38,8 +39,10 @@ const NON_FOCUS_POLICIES = Object.keys(
 ) as NonFocusPolicy[];
 
 export class AgentNotebookView extends ItemView {
+  private agentTargets: AgentTarget[] = [];
   private createRunDraft = true;
   private instruction = "";
+  private isLoadingTargets = false;
   private nonFocusPolicy: NonFocusPolicy = "suggest";
   private readonly plugin: AgentNotebookPlugin;
   private selectedTargetId = "";
@@ -67,14 +70,15 @@ export class AgentNotebookView extends ItemView {
 
   async onOpen(): Promise<void> {
     this.render();
+    this.refreshAgentTargets();
     this.registerEvent(
-      this.app.workspace.on("active-leaf-change", () => this.render())
+      this.app.workspace.on("active-leaf-change", () => this.refreshAgentTargets())
     );
     this.registerEvent(
       this.app.workspace.on("editor-change", () => this.renderContextOnly())
     );
     this.registerEvent(
-      this.app.workspace.on("layout-change", () => this.render())
+      this.app.workspace.on("layout-change", () => this.refreshAgentTargets())
     );
   }
 
@@ -191,31 +195,48 @@ export class AgentNotebookView extends ItemView {
   }
 
   private renderTargetControl(container: HTMLElement): void {
-    const targets = listClaudeSidebarTargets(this.app);
+    const targets = this.agentTargets;
     this.selectedTargetId = resolveDefaultClaudeSidebarTargetId(
       this.app,
-      this.selectedTargetId || this.plugin.settings.lastClaudeSidebarTargetId
+      this.selectedTargetId || this.plugin.settings.lastClaudeSidebarTargetId,
+      targets
     );
 
-    this.renderDropdownControl(
-      container,
-      "Session",
-      (dropdown) => {
-        dropdown.addOption("", targets.length ? "最近使用" : "自动");
-
-        for (const target of targets) {
-          dropdown.addOption(target.id, target.label);
-        }
-
-        dropdown.setValue(this.selectedTargetId);
-        dropdown.onChange(async (value) => {
-          this.selectedTargetId = value;
-          this.plugin.settings.lastClaudeSidebarTargetId = value;
-          await this.plugin.saveSettings();
-        });
-      },
-      targets.length ? "" : "未检测到打开的 Sidebar session"
+    const row = container.createDiv("agent-notebook-control");
+    row.createDiv({ cls: "agent-notebook-control__label", text: "Session" });
+    const field = row.createDiv(
+      "agent-notebook-control__field agent-notebook-control__field--session"
     );
+    const dropdown = new DropdownComponent(field);
+    dropdown.addOption(
+      "",
+      this.isLoadingTargets ? "加载中" : targets.length ? "最近使用" : "无 session"
+    );
+
+    for (const target of targets) {
+      dropdown.addOption(target.id, target.label);
+    }
+
+    dropdown.setValue(this.selectedTargetId);
+    dropdown.onChange(async (value) => {
+      this.selectedTargetId = value;
+      this.plugin.settings.lastClaudeSidebarTargetId = value;
+      await this.plugin.saveSettings();
+    });
+
+    new ButtonComponent(field)
+      .setButtonText("刷新")
+      .setTooltip("刷新 opencode sessions")
+      .onClick(() => {
+        this.refreshAgentTargets();
+      });
+
+    if (!targets.length && !this.isLoadingTargets) {
+      row.createDiv({
+        cls: "agent-notebook-control__hint",
+        text: "未读到 opencode 历史 session"
+      });
+    }
   }
 
   private renderDropdownControl(
@@ -324,13 +345,15 @@ export class AgentNotebookView extends ItemView {
     if (shouldSendToSidebar) {
       const targetId = resolveDefaultClaudeSidebarTargetId(
         this.app,
-        this.selectedTargetId || this.plugin.settings.lastClaudeSidebarTargetId
+        this.selectedTargetId || this.plugin.settings.lastClaudeSidebarTargetId,
+        this.agentTargets
       );
       const sent = await sendToClaudeSidebar(this.app, built.prompt, targetId);
       if (sent) {
         this.selectedTargetId = targetId;
         this.plugin.settings.lastClaudeSidebarTargetId = targetId;
         await this.plugin.saveSettings();
+        this.refreshAgentTargets();
         new Notice(runPath ? `任务已发送，run 草稿已创建：${runPath}` : "任务已发送。");
         return;
       }
@@ -354,5 +377,22 @@ export class AgentNotebookView extends ItemView {
       this.plugin.settings,
       file ?? undefined
     );
+  }
+
+  private async refreshAgentTargets(): Promise<void> {
+    if (this.isLoadingTargets) {
+      return;
+    }
+
+    this.isLoadingTargets = true;
+    this.render();
+    try {
+      this.agentTargets = await listAgentTargets(this.app);
+    } catch {
+      this.agentTargets = [];
+    } finally {
+      this.isLoadingTargets = false;
+      this.render();
+    }
   }
 }

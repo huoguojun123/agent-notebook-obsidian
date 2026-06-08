@@ -1,6 +1,6 @@
 {
   "name": "agent-notebook-obsidian-plugin",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "private": true,
   "description": "Obsidian plugin for notebook-scoped opencode prompt workflows.",
   "main": "main.js",

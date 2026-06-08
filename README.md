@@ -14,8 +14,8 @@ It does not replace Obsidian, and it does not provide a full chat UI. Obsidian r
 - Choose how non-focus content should be handled: suggest only, ask first, or allow linked edits.
 - Generate a stage-aware opencode prompt with scope and edit rules.
 - Send the generated task directly to Claude Sidebar when that plugin is installed.
-- Choose the target Claude Sidebar session from currently open tabs, defaulting to the last used target.
-- Refresh the session list when the Obsidian layout changes, and ignore closed sidebar tabs.
+- List opencode historical sessions with `opencode session list --format json`, defaulting to the most recent available session.
+- Include currently open Claude Sidebar tabs as additional live targets, and ignore closed tabs.
 - Fall back to copying the prompt to the clipboard.
 - Optionally create a `_agent-runs/` draft in the notebook folder.
 
@@ -28,7 +28,7 @@ The current generator is deterministic by design: it uses a stable task-card tem
 3. Mark the current folder as a notebook if needed.
 4. Select the stage, scope, and non-focus policy.
 5. Write the task requirement.
-6. Choose the target Claude Sidebar session if more than one is open.
+6. Choose an opencode session, or keep the most recent session selected.
 7. Send the task into that session, or copy it if the sidebar is not available.
 
 ## Install With BRAT
@@ -68,4 +68,4 @@ The source lives in `src/`. The compiled plugin entry is `main.js`.
 
 ## Current Status
 
-This is an early MVP intended for personal workflow testing. It generates prompts and run drafts; it does not execute shell commands or call opencode directly yet.
+This is an early MVP intended for personal workflow testing. It generates prompts and run drafts, reads opencode session history, and dispatches selected tasks through Claude Sidebar when available.

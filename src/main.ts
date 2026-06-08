@@ -9,6 +9,7 @@ import {
   normalizePath
 } from "obsidian";
 import {
+  listAgentTargets,
   resolveDefaultClaudeSidebarTargetId,
   sendToClaudeSidebar
 } from "./agent-targets";
@@ -196,13 +197,18 @@ export default class AgentNotebookPlugin extends Plugin {
           runPath = await createRunDraft(this.app.vault, context, built);
         }
 
+        const targets = this.settings.sendToClaudeSidebarByDefault
+          ? await listAgentTargets(this.app)
+          : [];
         const targetId = resolveDefaultClaudeSidebarTargetId(
           this.app,
-          this.settings.lastClaudeSidebarTargetId
+          this.settings.lastClaudeSidebarTargetId,
+          targets
         );
-        const sent = this.settings.sendToClaudeSidebarByDefault
-          ? await sendToClaudeSidebar(this.app, built.prompt, targetId)
-          : false;
+        const sent =
+          this.settings.sendToClaudeSidebarByDefault && targetId
+            ? await sendToClaudeSidebar(this.app, built.prompt, targetId)
+            : false;
 
         if (sent) {
           this.settings.lastClaudeSidebarTargetId = targetId;
