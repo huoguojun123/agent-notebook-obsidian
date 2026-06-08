@@ -57,14 +57,16 @@ export async function sendToClaudeSidebar(
 }
 
 export function listClaudeSidebarTargets(app: App): AgentTarget[] {
-  const leaves = app.workspace.getLeavesOfType(CLAUDE_SIDEBAR_VIEW_TYPE);
+  const leaves = app.workspace
+    .getLeavesOfType(CLAUDE_SIDEBAR_VIEW_TYPE)
+    .filter(isUsableClaudeSidebarLeaf);
   const plugin = getClaudeSidebarPlugin(app);
   const activeLeaf = plugin?.lastActiveTerminalLeaf;
 
   return leaves.map((leaf, index) => {
     const view = leaf.view as unknown as ClaudeSidebarView;
     const workingDir = view.workingDir || "Vault root";
-    const status = view.proc && !view.proc.killed ? "running" : "not running";
+    const status = view.proc && !view.proc.killed ? "ready" : "starting";
     const isActive = leaf === activeLeaf;
     return {
       id: targetIdForLeaf(leaf),
@@ -134,7 +136,19 @@ function findClaudeSidebarLeaf(
   return (
     app.workspace
       .getLeavesOfType(CLAUDE_SIDEBAR_VIEW_TYPE)
+      .filter(isUsableClaudeSidebarLeaf)
       .find((leaf) => targetIdForLeaf(leaf) === targetId) ?? null
+  );
+}
+
+function isUsableClaudeSidebarLeaf(leaf: WorkspaceLeaf): boolean {
+  const view = leaf.view as unknown as ClaudeSidebarView;
+  const containerEl = leaf.view?.containerEl;
+  return Boolean(
+    containerEl?.isConnected &&
+      view.proc &&
+      !view.proc.killed &&
+      view.proc.stdin?.write
   );
 }
 

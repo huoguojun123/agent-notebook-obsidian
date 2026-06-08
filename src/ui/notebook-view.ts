@@ -1,9 +1,10 @@
 import {
   ButtonComponent,
+  DropdownComponent,
   ItemView,
   MarkdownView,
   Notice,
-  Setting,
+  ToggleComponent,
   WorkspaceLeaf
 } from "obsidian";
 import { collectNotebookContext } from "../context";
@@ -71,6 +72,9 @@ export class AgentNotebookView extends ItemView {
     );
     this.registerEvent(
       this.app.workspace.on("editor-change", () => this.renderContextOnly())
+    );
+    this.registerEvent(
+      this.app.workspace.on("layout-change", () => this.render())
     );
   }
 
@@ -144,7 +148,7 @@ export class AgentNotebookView extends ItemView {
   }
 
   private renderControls(container: HTMLElement): void {
-    new Setting(container).setName("阶段").addDropdown((dropdown) => {
+    this.renderDropdownControl(container, "阶段", (dropdown) => {
       for (const stage of STAGES) {
         dropdown.addOption(stage, STAGE_LABELS[stage]);
       }
@@ -153,7 +157,7 @@ export class AgentNotebookView extends ItemView {
       });
     });
 
-    new Setting(container).setName("范围").addDropdown((dropdown) => {
+    this.renderDropdownControl(container, "范围", (dropdown) => {
       for (const scope of SCOPES) {
         dropdown.addOption(scope, SCOPE_LABELS[scope]);
       }
@@ -162,7 +166,7 @@ export class AgentNotebookView extends ItemView {
       });
     });
 
-    new Setting(container).setName("非焦点").addDropdown((dropdown) => {
+    this.renderDropdownControl(container, "非焦点", (dropdown) => {
       for (const policy of NON_FOCUS_POLICIES) {
         dropdown.addOption(policy, NON_FOCUS_POLICY_LABELS[policy]);
       }
@@ -171,13 +175,13 @@ export class AgentNotebookView extends ItemView {
       });
     });
 
-    new Setting(container).setName("Run 记录").addToggle((toggle) => {
+    this.renderToggleControl(container, "Run", (toggle) => {
       toggle.setValue(this.createRunDraft).onChange((value) => {
         this.createRunDraft = value;
       });
     });
 
-    new Setting(container).setName("发送到 Sidebar").addToggle((toggle) => {
+    this.renderToggleControl(container, "Sidebar", (toggle) => {
       toggle.setValue(this.sendToSidebar).onChange((value) => {
         this.sendToSidebar = value;
       });
@@ -193,15 +197,11 @@ export class AgentNotebookView extends ItemView {
       this.selectedTargetId || this.plugin.settings.lastClaudeSidebarTargetId
     );
 
-    new Setting(container)
-      .setName("目标 session")
-      .setDesc(
-        targets.length ? "" : "没有打开的 Claude Sidebar tab；发送时会尝试打开。"
-      )
-      .addDropdown((dropdown) => {
-        if (!targets.length) {
-          dropdown.addOption("", "自动");
-        }
+    this.renderDropdownControl(
+      container,
+      "Session",
+      (dropdown) => {
+        dropdown.addOption("", targets.length ? "最近使用" : "自动");
 
         for (const target of targets) {
           dropdown.addOption(target.id, target.label);
@@ -213,7 +213,38 @@ export class AgentNotebookView extends ItemView {
           this.plugin.settings.lastClaudeSidebarTargetId = value;
           await this.plugin.saveSettings();
         });
-      });
+      },
+      targets.length ? "" : "未检测到打开的 Sidebar session"
+    );
+  }
+
+  private renderDropdownControl(
+    container: HTMLElement,
+    label: string,
+    configure: (dropdown: DropdownComponent) => void,
+    hint = ""
+  ): void {
+    const row = container.createDiv("agent-notebook-control");
+    const labelEl = row.createDiv("agent-notebook-control__label");
+    labelEl.setText(label);
+    const field = row.createDiv("agent-notebook-control__field");
+    const dropdown = new DropdownComponent(field);
+    configure(dropdown);
+    if (hint) {
+      row.createDiv({ cls: "agent-notebook-control__hint", text: hint });
+    }
+  }
+
+  private renderToggleControl(
+    container: HTMLElement,
+    label: string,
+    configure: (toggle: ToggleComponent) => void
+  ): void {
+    const row = container.createDiv("agent-notebook-control");
+    row.createDiv({ cls: "agent-notebook-control__label", text: label });
+    const field = row.createDiv("agent-notebook-control__field");
+    const toggle = new ToggleComponent(field);
+    configure(toggle);
   }
 
   private renderInstruction(container: HTMLElement): void {

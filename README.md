@@ -15,6 +15,7 @@ It does not replace Obsidian, and it does not provide a full chat UI. Obsidian r
 - Generate a stage-aware opencode prompt with scope and edit rules.
 - Send the generated task directly to Claude Sidebar when that plugin is installed.
 - Choose the target Claude Sidebar session from currently open tabs, defaulting to the last used target.
+- Refresh the session list when the Obsidian layout changes, and ignore closed sidebar tabs.
 - Fall back to copying the prompt to the clipboard.
 - Optionally create a `_agent-runs/` draft in the notebook folder.
 

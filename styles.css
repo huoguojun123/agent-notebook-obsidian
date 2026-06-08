@@ -10,9 +10,9 @@
 .agent-notebook-view {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   height: 100%;
-  padding: 16px;
+  padding: 14px;
   overflow-y: auto;
 }
 
@@ -24,7 +24,7 @@
 
 .agent-notebook-view__header h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 650;
   letter-spacing: 0;
 }
@@ -46,10 +46,10 @@
 
 .agent-notebook-context {
   display: grid;
-  gap: 7px;
-  padding: 10px;
+  gap: 6px;
+  padding: 9px 10px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: 7px;
   background: var(--background-secondary);
 }
 
@@ -83,21 +83,50 @@
 .agent-notebook-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 9px;
 }
 
-.agent-notebook-form .setting-item {
-  padding: 8px 0;
+.agent-notebook-control {
+  display: grid;
+  grid-template-columns: minmax(70px, 0.38fr) minmax(120px, 0.62fr);
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  padding: 0;
 }
 
-.agent-notebook-form .setting-item-info {
-  flex: 0 0 86px;
+.agent-notebook-control__label {
+  min-width: 0;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.agent-notebook-control__field {
+  min-width: 0;
+}
+
+.agent-notebook-control__field select {
+  width: 100%;
+  min-width: 0;
+}
+
+.agent-notebook-control__field .checkbox-container {
+  margin-left: auto;
+}
+
+.agent-notebook-control__hint {
+  grid-column: 1 / -1;
+  color: var(--text-faint);
+  font-size: 11px;
+  line-height: 1.35;
 }
 
 .agent-notebook-instruction {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
 }
 
 .agent-notebook-instruction label {
@@ -108,7 +137,7 @@
 
 .agent-notebook-instruction textarea {
   width: 100%;
-  min-height: 150px;
+  min-height: 128px;
   resize: vertical;
   line-height: 1.5;
 }
@@ -116,7 +145,7 @@
 .agent-notebook-actions {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 8px;
+  gap: 7px;
 }
 
 .agent-notebook-actions button {
