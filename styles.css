@@ -6,3 +6,119 @@
   color: var(--text-muted);
   font-size: var(--font-ui-small);
 }
+
+.agent-notebook-view {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  height: 100%;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.agent-notebook-view__header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.agent-notebook-view__header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
+.agent-notebook-view__header p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  line-height: 1.45;
+}
+
+.agent-notebook-eyebrow {
+  color: var(--text-faint);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.agent-notebook-context {
+  display: grid;
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-secondary);
+}
+
+.agent-notebook-context__row {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr);
+  gap: 8px;
+  align-items: baseline;
+  min-width: 0;
+}
+
+.agent-notebook-context__label {
+  color: var(--text-faint);
+  font-size: 11px;
+  font-weight: 650;
+  text-transform: uppercase;
+}
+
+.agent-notebook-context__value {
+  min-width: 0;
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+  overflow-wrap: anywhere;
+}
+
+.agent-notebook-empty {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.agent-notebook-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.agent-notebook-form .setting-item {
+  padding: 8px 0;
+}
+
+.agent-notebook-form .setting-item-info {
+  flex: 0 0 86px;
+}
+
+.agent-notebook-instruction {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.agent-notebook-instruction label {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  font-weight: 600;
+}
+
+.agent-notebook-instruction textarea {
+  width: 100%;
+  min-height: 150px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.agent-notebook-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.agent-notebook-actions button {
+  width: 100%;
+}

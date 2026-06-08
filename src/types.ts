@@ -7,6 +7,14 @@ export type NotebookStage =
   | "supplement"
   | "review";
 
+export type NotebookTaskScope =
+  | "selection"
+  | "heading"
+  | "file"
+  | "notebook";
+
+export type NonFocusPolicy = "suggest" | "ask" | "allow";
+
 export interface NotebookConfig {
   id: string;
   title: string;
@@ -31,6 +39,8 @@ export interface NotebookContext {
 export interface NotebookTaskInput {
   context: NotebookContext;
   stage: NotebookStage;
+  scope: NotebookTaskScope;
+  nonFocusPolicy: NonFocusPolicy;
   instruction: string;
   createRunDraft: boolean;
 }
@@ -54,4 +64,17 @@ export const STAGE_LABELS: Record<NotebookStage, string> = {
   optimize: "优化",
   supplement: "补充",
   review: "复盘"
+};
+
+export const SCOPE_LABELS: Record<NotebookTaskScope, string> = {
+  selection: "当前选区",
+  heading: "当前标题",
+  file: "当前文件",
+  notebook: "整个 Notebook"
+};
+
+export const NON_FOCUS_POLICY_LABELS: Record<NonFocusPolicy, string> = {
+  suggest: "非焦点只提建议",
+  ask: "修改非焦点前先问",
+  allow: "允许联动修改"
 };

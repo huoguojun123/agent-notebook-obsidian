@@ -1,11 +1,17 @@
 import { normalizePath } from "obsidian";
 import type { BuiltPrompt, NotebookTaskInput } from "./types";
-import { STAGE_LABELS } from "./types";
+import {
+  NON_FOCUS_POLICY_LABELS,
+  SCOPE_LABELS,
+  STAGE_LABELS
+} from "./types";
 import { nameFromPath } from "./notebooks";
 
 export function buildNotebookTaskPrompt(input: NotebookTaskInput): BuiltPrompt {
   const { context, stage, instruction } = input;
   const stageLabel = STAGE_LABELS[stage];
+  const scopeLabel = SCOPE_LABELS[input.scope];
+  const nonFocusPolicyLabel = NON_FOCUS_POLICY_LABELS[input.nonFocusPolicy];
   const notebookTitle =
     context.notebook?.title || nameFromPath(context.activeFolderPath);
   const notebookRoot = normalizePath(
@@ -31,18 +37,21 @@ export function buildNotebookTaskPrompt(input: NotebookTaskInput): BuiltPrompt {
     fenced(selectionBlock),
     "",
     `任务阶段：${stageLabel}`,
+    `任务范围：${scopeLabel}`,
+    `非焦点策略：${nonFocusPolicyLabel}`,
     "",
     "用户要求：",
     instruction.trim(),
     "",
     "执行规则：",
     "1. 先快速检查 notebook 结构和与焦点内容最相关的文件。",
-    "2. 焦点内容可以按任务要求修改；若需要大改，先说明计划。",
-    "3. 非焦点文段默认只提出修改建议，不直接改。",
+    `2. 本次任务范围是“${scopeLabel}”；不要把工作扩展成无边界的全库整理。`,
+    `3. 焦点内容可以按任务要求修改；非焦点内容按“${nonFocusPolicyLabel}”处理。`,
     "4. 可以在合适位置新建文件夹和 Markdown 文件，但需列出清单。",
     "5. 删除、移动、大规模重构必须先明确询问用户。",
-    "6. 保持 Obsidian 双链、相对路径和 Markdown 可读性。",
-    `7. 完成后更新或创建 _agent-runs/${runFileName}，记录目标、范围、改动、建议和下一步。`
+    "6. 保持 Obsidian 双链、相对路径、标题层级和 Markdown 可读性。",
+    `7. 完成后更新或创建 _agent-runs/${runFileName}，记录目标、范围、改动、建议和下一步。`,
+    "8. 输出时先给结论，再给改动清单和下一步，不要堆砌工具调用过程。"
   ].join("\n");
 
   return {
@@ -52,9 +61,11 @@ export function buildNotebookTaskPrompt(input: NotebookTaskInput): BuiltPrompt {
       activeFile: context.activeFilePath,
       currentHeading: context.currentHeading,
       instruction,
+      nonFocusPolicyLabel,
       notebookRoot,
       notebookTitle,
       prompt,
+      scopeLabel,
       stageLabel
     })
   };
@@ -64,9 +75,11 @@ function buildRunContent(input: {
   activeFile: string;
   currentHeading: string;
   instruction: string;
+  nonFocusPolicyLabel: string;
   notebookRoot: string;
   notebookTitle: string;
   prompt: string;
+  scopeLabel: string;
   stageLabel: string;
 }): string {
   return [
@@ -82,6 +95,8 @@ function buildRunContent(input: {
     `- Root: \`${input.notebookRoot || "."}\``,
     `- Active file: \`${input.activeFile}\``,
     `- Heading: ${input.currentHeading || "未定位到标题"}`,
+    `- Scope: ${input.scopeLabel}`,
+    `- Non-focus policy: ${input.nonFocusPolicyLabel}`,
     "",
     "## Prompt",
     "",

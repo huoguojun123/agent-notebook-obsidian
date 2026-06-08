@@ -1,24 +1,40 @@
 import { App, Modal, Notice, Setting } from "obsidian";
-import type { NotebookStage } from "../types";
-import { STAGE_LABELS } from "../types";
+import type {
+  NonFocusPolicy,
+  NotebookStage,
+  NotebookTaskScope
+} from "../types";
+import {
+  NON_FOCUS_POLICY_LABELS,
+  SCOPE_LABELS,
+  STAGE_LABELS
+} from "../types";
 
 interface TaskModalOptions {
   createRunDraftByDefault: boolean;
   notebookTitle: string;
   onSubmit: (
     stage: NotebookStage,
+    scope: NotebookTaskScope,
+    nonFocusPolicy: NonFocusPolicy,
     instruction: string,
     createRunDraft: boolean
   ) => void | Promise<void>;
 }
 
 const STAGES = Object.keys(STAGE_LABELS) as NotebookStage[];
+const SCOPES = Object.keys(SCOPE_LABELS) as NotebookTaskScope[];
+const NON_FOCUS_POLICIES = Object.keys(
+  NON_FOCUS_POLICY_LABELS
+) as NonFocusPolicy[];
 
 export class TaskModal extends Modal {
   private createRunDraft: boolean;
   private instruction = "";
   private readonly options: TaskModalOptions;
+  private nonFocusPolicy: NonFocusPolicy = "suggest";
   private stage: NotebookStage = "optimize";
+  private taskScope: NotebookTaskScope = "selection";
 
   constructor(app: App, options: TaskModalOptions) {
     super(app);
@@ -42,6 +58,24 @@ export class TaskModal extends Modal {
       }
       dropdown.setValue(this.stage).onChange((value) => {
         this.stage = value as NotebookStage;
+      });
+    });
+
+    new Setting(contentEl).setName("范围").addDropdown((dropdown) => {
+      for (const scope of SCOPES) {
+        dropdown.addOption(scope, SCOPE_LABELS[scope]);
+      }
+      dropdown.setValue(this.taskScope).onChange((value) => {
+        this.taskScope = value as NotebookTaskScope;
+      });
+    });
+
+    new Setting(contentEl).setName("非焦点").addDropdown((dropdown) => {
+      for (const policy of NON_FOCUS_POLICIES) {
+        dropdown.addOption(policy, NON_FOCUS_POLICY_LABELS[policy]);
+      }
+      dropdown.setValue(this.nonFocusPolicy).onChange((value) => {
+        this.nonFocusPolicy = value as NonFocusPolicy;
       });
     });
 
@@ -74,6 +108,8 @@ export class TaskModal extends Modal {
 
           await this.options.onSubmit(
             this.stage,
+            this.taskScope,
+            this.nonFocusPolicy,
             this.instruction,
             this.createRunDraft
           );

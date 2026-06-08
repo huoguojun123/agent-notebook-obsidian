@@ -5,6 +5,7 @@ import {
   Plugin,
   TFile,
   TFolder,
+  WorkspaceLeaf,
   normalizePath
 } from "obsidian";
 import { collectNotebookContext } from "./context";
@@ -14,6 +15,10 @@ import { createRunDraft } from "./run-log";
 import type { AgentNotebookSettings } from "./types";
 import { DEFAULT_SETTINGS } from "./types";
 import { NotebookModal } from "./ui/notebook-modal";
+import {
+  AGENT_NOTEBOOK_VIEW_TYPE,
+  AgentNotebookView
+} from "./ui/notebook-view";
 import { TaskModal } from "./ui/task-modal";
 
 export default class AgentNotebookPlugin extends Plugin {
@@ -21,6 +26,23 @@ export default class AgentNotebookPlugin extends Plugin {
 
   async onload(): Promise<void> {
     await this.loadSettings();
+
+    this.registerView(
+      AGENT_NOTEBOOK_VIEW_TYPE,
+      (leaf) => new AgentNotebookView(leaf, this)
+    );
+
+    this.addRibbonIcon("sparkles", "Open Agent Notebook", () => {
+      this.activateView();
+    });
+
+    this.addCommand({
+      id: "open-agent-notebook-view",
+      name: "Open Agent Notebook panel",
+      callback: () => {
+        this.activateView();
+      }
+    });
 
     this.addCommand({
       id: "mark-current-folder-as-notebook",
@@ -90,6 +112,28 @@ export default class AgentNotebookPlugin extends Plugin {
     await this.saveData(this.settings);
   }
 
+  async activateView(): Promise<void> {
+    const { workspace } = this.app;
+    let leaf: WorkspaceLeaf | null = null;
+    const leaves = workspace.getLeavesOfType(AGENT_NOTEBOOK_VIEW_TYPE);
+
+    if (leaves.length > 0) {
+      leaf = leaves[0];
+    } else {
+      leaf = workspace.getRightLeaf(false);
+      if (!leaf) {
+        new Notice("无法打开 Agent Notebook 面板。");
+        return;
+      }
+      await leaf.setViewState({
+        active: true,
+        type: AGENT_NOTEBOOK_VIEW_TYPE
+      });
+    }
+
+    workspace.revealLeaf(leaf);
+  }
+
   private openMarkNotebookModal(rootPath: string): void {
     const normalizedRoot = normalizePath(rootPath);
     new NotebookModal(this.app, {
@@ -126,11 +170,19 @@ export default class AgentNotebookPlugin extends Plugin {
     new TaskModal(this.app, {
       createRunDraftByDefault: this.settings.createRunDraftByDefault,
       notebookTitle,
-      onSubmit: async (stage, instruction, createDraft) => {
+      onSubmit: async (
+        stage,
+        scope,
+        nonFocusPolicy,
+        instruction,
+        createDraft
+      ) => {
         const built = buildNotebookTaskPrompt({
           context,
           createRunDraft: createDraft,
           instruction,
+          nonFocusPolicy,
+          scope,
           stage
         });
 
